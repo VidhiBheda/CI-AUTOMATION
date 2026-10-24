@@ -1,0 +1,13 @@
+# OS generated files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Node / Dependency artifacts
+node_modules/
+npm-debug.log*
+
+# Environment and sensitive keys
+.env
+*.local
+credentials.json
