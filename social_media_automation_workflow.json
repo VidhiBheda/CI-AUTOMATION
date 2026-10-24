@@ -431,7 +431,7 @@
           "conditions": [
             {
               "id": "cond-ig-yes",
-              "leftValue": "={{ $('Merge Client IDs & Prepare Payloads').first().json.Instagram }}",
+              "leftValue": "={{ $json.Instagram }}",
               "rightValue": "Yes",
               "operator": {
                 "type": "string",
@@ -447,27 +447,27 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        700,
-        0
+        960,
+        -304
       ]
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://graph.facebook.com/v21.0/{{ $('Merge Client IDs & Prepare Payloads').first().json.instagram_id }}/media",
+        "url": "=https://graph.facebook.com/v21.0/{{ $json.instagram_id }}/media",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer EAGVJejn6LZAgBS7THWaV9sU1TCRUSI1c8I4F0wg4xfxffIKwzccS9VmGXDo84YGlU4gzNk9wDcLSHeSoOnL9urn7JlwLOZB9IsPerhMBuQ3hoTgttM7feZCLRE7Q7AUzS4USXA3nAgz7YBZBeaBVCPGhK75jDGJtgddsnqIk4sZBEjZAPrVtxOTw7eXKQ0RA2M2fT6AAexhq3UIkZBtMTnuuWdlQsTMcZBgXMjD5eDYklSw7oJgAUJy2poehurMietWFF9h62X848S97agr3xcff"
+              "value": "Bearer EAGVJejn6LZAgBS8NUNXuUpCr3taMGXZAj37jsijguBcOOT6vZB3YpXbbGzx0VMMLoNkjhbkiGbdhqV3b3X8FVFQWOjiF5iopi0aJc1F1RH4u0PPHTD29TVFTp6OAA0JTEbWl7QRhjFpXL942c55bcIbfLiDFtPV6QMZCGgLv5YUYUBAJ8Vm9yqUYo1kxT9H37TD8hC0uFohRWxnETedssNJw5oZCEYLjfZBIh2cmcqR2I14pVgDP9myugbvJ702sGsC6lak7HOAmtVZAZCHV78Xa"
             }
           ]
         },
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify($('Merge Client IDs & Prepare Payloads').first().json.ig_body) }}",
+        "body": "={{ JSON.stringify($json.ig_body) }}",
         "options": {}
       },
       "id": "http-ig-create-container",
@@ -475,15 +475,15 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        900,
-        -150
+        1200,
+        -320
       ],
       "onError": "continueRegularOutput"
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://graph.facebook.com/v21.0/{{ $('Merge Client IDs & Prepare Payloads').first().json.instagram_id }}/media_publish",
+        "url": "=https://graph.facebook.com/v21.0/{{ $(\"Merge Client IDs & Prepare Payloads\").first().json.instagram_id }}/media_publish",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -496,7 +496,7 @@
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({ creation_id: $('Instagram: Create Media Container').first().json.id }) }}",
+        "body": "={{ JSON.stringify({ creation_id: $json.id }) }}",
         "options": {
           "timeout": 60000
         }
@@ -506,12 +506,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1300,
-        -150
+        1568,
+        -320
       ],
       "retryOnFail": false,
-      "maxTries": 5,
-      "waitBetweenTries": 5000,
       "onError": "continueRegularOutput"
     },
     {
@@ -527,7 +525,7 @@
           "conditions": [
             {
               "id": "cond-fb-yes",
-              "leftValue": "={{ $('Merge Client IDs & Prepare Payloads').first().json.Facebook }}",
+              "leftValue": "={{ $json.Facebook }}",
               "rightValue": "Yes",
               "operator": {
                 "type": "string",
@@ -543,38 +541,36 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1700,
-        0
+        960,
+        -80
       ]
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://graph.facebook.com/v21.0/{{ $('Merge Client IDs & Prepare Payloads').first().json.facebook_id }}/{{ $('Merge Client IDs & Prepare Payloads').first().json.fb_endpoint }}",
+        "url": "=https://graph.facebook.com/v21.0/{{ $json.facebook_id }}/{{ $json.fb_endpoint }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer EAGVJejn6LZAgBSxnpzZA4OZB7mAmTppww8pgwWZAHPqn0aDPXssHYaTPug608eR7vSZCYFALEKHlMoFUDZANxRudTokpCUZB7cLK2ZBcwcRUA6lNyA8ved0N2QRr7jUoYGI3yWJThI9Evu933dbZBA2SZAo60eeRjZCTxt9LnjJgStIWMj5QpRtJZBhXxKIjAZBXZBLZAPIaKZASy95fsQemA3EeTbL5tRzYU59af2TBZCwJignMZD"
+              "value": "Bearer EAGVJejn6LZAgBS5UAaGgGWOZAALHHJo7uZBn4m8rGwxi0Gx6ZCIIOuaXG4rBmV4q6kxZCLF3vSoUNIj2orUfrfFpsvipbZBMF2Ha16gvG5KfGpapLhPYGcaZAZBmguyPZAvX2koYXfiFaaWbKi5Scvuham33T21ZBRczrylubSzW0yArmiwt23Pk7uEAoTKzBSCaQXjcmZAPfRBLwZBNwUfgMsQYlb5En1X6TVbiY6JtZAcoNx2MZD"
             }
           ]
         },
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify($('Merge Client IDs & Prepare Payloads').first().json.fb_body) }}",
-        "options": {
-          "timeout": 60000
-        }
+        "body": "={{ JSON.stringify($json.fb_body) }}",
+        "options": {}
       },
       "id": "http-fb-publish",
       "name": "Facebook: Publish Photo/Post",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1900,
-        -150
+        1296,
+        -80
       ],
       "onError": "continueRegularOutput"
     },
@@ -591,7 +587,7 @@
           "conditions": [
             {
               "id": "cond-li-yes",
-              "leftValue": "={{ $('Merge Client IDs & Prepare Payloads').first().json.LinkedIn }}",
+              "leftValue": "={{ $json.LinkedIn }}",
               "rightValue": "Yes",
               "operator": {
                 "type": "string",
@@ -607,8 +603,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        2100,
-        0
+        960,
+        144
       ]
     },
     {
@@ -629,38 +625,35 @@
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify($('Merge Client IDs & Prepare Payloads').first().json.li_body) }}",
-        "options": {
-          "timeout": 60000
-        }
+        "body": "={{ JSON.stringify($json.li_body) }}",
+        "options": {}
       },
       "id": "http-li-publish",
       "name": "LinkedIn: Publish Post",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2300,
-        -150
+        1264,
+        176
       ],
       "credentials": {
         "linkedInOAuth2Api": {
           "id": "eA6PACX0vd88Qd4e",
           "name": "LinkedIn account"
         }
-      },
-      "onError": "continueRegularOutput"
+      }
     },
     {
       "parameters": {
-        "jsCode": "const post = $('Merge Client IDs & Prepare Payloads').first().json;\nconst publishedUrls = [];\nconst errors = [];\n\n// 1. Instagram\nif (post.Instagram === \"Yes\") {\n  try {\n    let igUrl = \"\";\n    try {\n      const igPerm = $('Instagram: Get Published Permalink').first();\n      if (igPerm && igPerm.json) {\n        if (igPerm.json.permalink) {\n          igUrl = igPerm.json.permalink;\n        } else if (igPerm.json.data && Array.isArray(igPerm.json.data) && igPerm.json.data.length > 0 && igPerm.json.data[0].permalink) {\n          igUrl = igPerm.json.data[0].permalink;\n        }\n      }\n    } catch (e) {}\n\n    if (!igUrl) {\n      try {\n        const igPub = $('Instagram: Publish Container').first();\n        if (igPub && igPub.json && igPub.json.id) {\n          igUrl = `https://www.instagram.com/p/${igPub.json.id}/`;\n        }\n      } catch (e) {}\n    }\n\n    if (igUrl) {\n      publishedUrls.push(igUrl);\n    } else {\n      let igErr = \"Instagram failed to return publish ID\";\n      try {\n        const igPubErr = $('Instagram: Publish Container').first();\n        if (igPubErr && igPubErr.json && igPubErr.json.error) {\n          igErr = `Instagram error: ${igPubErr.json.error.message || JSON.stringify(igPubErr.json.error)}`;\n        } else {\n          const igCreateErr = $('Instagram: Create Media Container').first();\n          if (igCreateErr && igCreateErr.json && igCreateErr.json.error) {\n            igErr = `Instagram error: ${igCreateErr.json.error.message || JSON.stringify(igCreateErr.json.error)}`;\n          }\n        }\n      } catch (e) {}\n      errors.push(igErr);\n    }\n  } catch (e) {\n    errors.push(\"Instagram error: \" + e.message);\n  }\n}\n\n// 2. Facebook\nif (post.Facebook === \"Yes\") {\n  try {\n    const fbPub = $('Facebook: Publish Photo/Post').first();\n    let fbUrl = \"\";\n    if (fbPub && fbPub.json) {\n      const photoId = fbPub.json.id;\n      const postId = fbPub.json.post_id;\n      if (photoId) {\n        fbUrl = `https://www.facebook.com/photo.php?fbid=${photoId}`;\n      } else if (postId) {\n        const storyId = postId.includes('_') ? postId.split('_')[1] : postId;\n        fbUrl = `https://www.facebook.com/permalink.php?story_fbid=${storyId}&id=${post.facebook_id}`;\n      }\n    }\n\n    if (fbUrl) {\n      publishedUrls.push(fbUrl);\n    } else if (fbPub && fbPub.json && fbPub.json.error) {\n      errors.push(`Facebook error: ${fbPub.json.error.message || JSON.stringify(fbPub.json.error)}`);\n    } else {\n      errors.push(\"Facebook failed to return post ID\");\n    }\n  } catch (e) {\n    errors.push(\"Facebook error: \" + e.message);\n  }\n}\n\n// 3. LinkedIn\nif (post.LinkedIn === \"Yes\") {\n  try {\n    const liPub = $('LinkedIn: Publish Post').first();\n    if (liPub && liPub.json && liPub.json.id) {\n      publishedUrls.push(`https://www.linkedin.com/feed/update/${liPub.json.id}`);\n    } else if (liPub && liPub.json && liPub.json.message) {\n      errors.push(`LinkedIn error: ${liPub.json.message}`);\n    } else {\n      errors.push(\"LinkedIn failed to return share ID\");\n    }\n  } catch (e) {\n    errors.push(\"LinkedIn error: \" + e.message);\n  }\n}\n\nconst allSuccessful = errors.length === 0;\n\nlet finalPublishedUrl = \"\";\nif (publishedUrls.length === 1) {\n  finalPublishedUrl = `=HYPERLINK(\"${publishedUrls[0]}\", \"${publishedUrls[0]}\")`;\n} else if (publishedUrls.length > 1) {\n  finalPublishedUrl = publishedUrls.join(\"\\n\");\n}\n\nreturn [{\n  json: {\n    \"Post ID\": post[\"Post ID\"],\n    \"Status\": allSuccessful ? \"Posted\" : \"Failed\",\n    \"Published URL\": finalPublishedUrl,\n    \"Error Message\": errors.join(\"; \")\n  }\n}];"
+        "jsCode": "const post = $('Merge Client IDs & Prepare Payloads').first().json;\nconst publishedUrls = [];\nconst errors = [];\n\n// 1. Instagram\nif (post.Instagram === \"Yes\") {\n  try {\n    let igUrl = \"\";\n    \n    // Check permalink node\n    try {\n      const igPerm = $('Instagram: Get Published Permalink').first();\n      if (igPerm && igPerm.json) {\n        if (igPerm.json.permalink) {\n          igUrl = igPerm.json.permalink;\n        } else if (igPerm.json.data && Array.isArray(igPerm.json.data) && igPerm.json.data.length > 0 && igPerm.json.data[0].permalink) {\n          igUrl = igPerm.json.data[0].permalink;\n        }\n      }\n    } catch (e) {}\n\n    // Check publish container node\n    if (!igUrl) {\n      try {\n        const igPub = $('Instagram: Publish Container').first();\n        if (igPub && igPub.json && igPub.json.id) {\n          igUrl = `https://www.instagram.com/p/${igPub.json.id}/`;\n        }\n      } catch (e) {}\n    }\n\n    if (igUrl) {\n      publishedUrls.push(igUrl);\n    } else {\n      let igErr = \"Instagram failed to return publish ID\";\n      try {\n        const igPubErr = $('Instagram: Publish Container').first();\n        if (igPubErr && igPubErr.json && igPubErr.json.error) {\n          igErr = `Instagram error: ${igPubErr.json.error.message || JSON.stringify(igPubErr.json.error)}`;\n        } else {\n          const igCreateErr = $('Instagram: Create Media Container').first();\n          if (igCreateErr && igCreateErr.json && igCreateErr.json.error) {\n            igErr = `Instagram error: ${igCreateErr.json.error.message || JSON.stringify(igCreateErr.json.error)}`;\n          }\n        }\n      } catch (e) {}\n      errors.push(igErr);\n    }\n  } catch (e) {\n    errors.push(\"Instagram error: \" + e.message);\n  }\n}\n\n// 2. Facebook\nif (post.Facebook === \"Yes\") {\n  try {\n    const fbPub = $('Facebook: Publish Photo/Post').first();\n    let fbUrl = \"\";\n    if (fbPub && fbPub.json) {\n      const photoId = fbPub.json.id;\n      const postId = fbPub.json.post_id;\n      if (photoId) {\n        fbUrl = `https://www.facebook.com/photo.php?fbid=${photoId}`;\n      } else if (postId) {\n        const storyId = postId.includes('_') ? postId.split('_')[1] : postId;\n        fbUrl = `https://www.facebook.com/permalink.php?story_fbid=${storyId}&id=${post.facebook_id}`;\n      }\n    }\n\n    if (fbUrl) {\n      publishedUrls.push(fbUrl);\n    } else if (fbPub && fbPub.json && fbPub.json.error) {\n      errors.push(`Facebook error: ${fbPub.json.error.message || JSON.stringify(fbPub.json.error)}`);\n    } else {\n      errors.push(\"Facebook failed to return post ID\");\n    }\n  } catch (e) {\n    errors.push(\"Facebook error: \" + e.message);\n  }\n}\n\n// 3. LinkedIn\nif (post.LinkedIn === \"Yes\") {\n  try {\n    const liPub = $('LinkedIn: Publish Post').first();\n    if (liPub && liPub.json && liPub.json.id) {\n      publishedUrls.push(`https://www.linkedin.com/feed/update/${liPub.json.id}`);\n    } else if (liPub && liPub.json && liPub.json.message) {\n      errors.push(`LinkedIn error: ${liPub.json.message}`);\n    } else {\n      errors.push(\"LinkedIn failed to return share ID\");\n    }\n  } catch (e) {\n    errors.push(\"LinkedIn error: \" + e.message);\n  }\n}\n\nconst allSuccessful = errors.length === 0;\n\nlet finalPublishedUrl = \"\";\nif (publishedUrls.length === 1) {\n  finalPublishedUrl = `=HYPERLINK(\"${publishedUrls[0]}\", \"${publishedUrls[0]}\")`;\n} else if (publishedUrls.length > 1) {\n  finalPublishedUrl = publishedUrls.join(\"\\n\");\n}\n\nreturn [{\n  json: {\n    \"Post ID\": post[\"Post ID\"],\n    \"Status\": allSuccessful ? \"Posted\" : \"Failed\",\n    \"Published URL\": finalPublishedUrl,\n    \"Error Message\": errors.join(\"; \")\n  }\n}];"
       },
       "id": "code-consolidate-results",
       "name": "Consolidate Publishing Results",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2500,
-        0
+        1776,
+        -80
       ]
     },
     {
@@ -697,8 +690,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
       "position": [
-        2700,
-        0
+        1920,
+        -80
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -716,14 +709,14 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        1100,
-        -150
+        1392,
+        -320
       ],
       "webhookId": "54ccaf78-b095-4137-971c-2c001f1bc8c9"
     },
     {
       "parameters": {
-        "url": "=https://graph.facebook.com/v21.0/{{ ($('Instagram: Publish Container').first().json && $('Instagram: Publish Container').first().json.id) ? ($('Instagram: Publish Container').first().json.id + '?fields=permalink') : ($('Merge Client IDs & Prepare Payloads').first().json.instagram_id + '/media?fields=permalink&limit=1') }}",
+        "url": "=https://graph.facebook.com/v21.0/{{ ($json && $json.id) ? ($json.id + '?fields=permalink') : ($('Merge Client IDs & Prepare Payloads').first().json.instagram_id + '/media?fields=permalink&limit=1') }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -742,8 +735,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1500,
-        -150
+        1744,
+        -320
       ],
       "retryOnFail": true,
       "maxTries": 3,
