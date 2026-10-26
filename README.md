@@ -9,6 +9,7 @@ An automated social media scheduling and publishing pipeline built in **n8n**, i
 - **Google Sheets as Headless CMS**: Schedule posts across multi-client accounts using a structured Google Sheet.
 - **Multi-Platform Publishing**:
   - **Instagram**: Two-step publishing pipeline (Media Container creation $\to$ 30s Transcoding Wait $\to$ Publish Container $\to$ Public Permalink retrieval). Supports both Images and Reels.
+  - **Photo Tagging (Instagram)**: Tag public Instagram accounts directly on images via standard `user_tags` coordinates.
   - **Facebook**: Posts photos or feed updates directly to the connected Facebook Page.
   - **LinkedIn**: Formatted UGC (User-Generated Content) publishing for personal profiles or company organizations.
 - **Strict Sequential Flow**: Eliminates race conditions and duplicate retries across all platforms.
@@ -27,6 +28,7 @@ An automated social media scheduling and publishing pipeline built in **n8n**, i
 | `Client Name` | Matches client in Tab B | `Webtrionix techno` |
 | `Content Name` | Short descriptive name | `AI Future` |
 | `Media URL` | Direct image link or Google Drive share URL | `https://drive.google.com/file/d/...` |
+| `Photo Tags` | Optional Instagram usernames to tag on the photo | `@ciflow904, @webtrionix` |
 | `Instagram` | `Yes` or `No` | `Yes` |
 | `Facebook` | `Yes` or `No` | `Yes` |
 | `LinkedIn` | `Yes` or `No` | `No` |
@@ -39,6 +41,17 @@ An automated social media scheduling and publishing pipeline built in **n8n**, i
 | `Status` | `Scheduled`, `Publishing`, `Posted`, or `Failed` | `Scheduled` |
 | `Published URL` | Auto-populated by workflow | Clickable links to live posts |
 | `Error Message` | Error logs if publishing fails | (Empty on success) |
+
+---
+
+### 🏷️ Photo Tagging Usage
+In Tab A (`Content Calendar`), you can add a column named **`Photo Tags`** (or **`Instagram User Tags`**).
+- Format: Enter comma-separated or space-separated handles (with or without `@`):
+  `@ciflow904, @webtrionix` or `ciflow904, webtrionix`
+- Supports tagging up to 20 public accounts per image post.
+- The pipeline automatically computes balanced coordinates `(x, y)` so tags are neatly distributed across the photo.
+- If left empty, the post publishes normally without tags.
+- Video posts (Reels) ignore photo tags gracefully without causing errors.
 
 ---
 
