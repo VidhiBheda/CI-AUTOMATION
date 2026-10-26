@@ -722,7 +722,7 @@
     },
     {
       "parameters": {
-        "url": "=https://graph.facebook.com/v21.0/{{ ($json && $json.id) ? ($json.id + '?fields=permalink') : ($('Merge Client IDs & Prepare Payloads').first().json.instagram_id + '/media?fields=permalink&limit=1') }}",
+        "url": "=https://graph.facebook.com/v21.0/{{ $json.id }}?fields=permalink",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
