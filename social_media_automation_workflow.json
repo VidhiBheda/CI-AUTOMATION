@@ -748,112 +748,6 @@
       "maxTries": 3,
       "waitBetweenTries": 3000,
       "onError": "continueRegularOutput"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "post-story-condition",
-              "leftValue": "={{ $('Merge Client IDs & Prepare Payloads').first().json.post_story }}",
-              "rightValue": true,
-              "operator": {
-                "type": "boolean",
-                "operation": "true",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "id": "if-post-story",
-      "name": "Publish to Instagram Story?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [
-        1980,
-        -320
-      ]
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "=https://graph.facebook.com/v21.0/{{ $('Merge Client IDs & Prepare Payloads').first().json.instagram_id }}/media",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "Bearer EAGVJejn6LZAgBS4EnS4ZCg5dUtFDzXyPQsRhfuYAYdVnfYrTQANq0bxVFIpOf4KsoZAI952jbsgYXQKflQqjgijeU5nCpEHtA27YWcZB9HLAZCzUm10JhATTNWZCA4TzZA4gx3WcR2necP8dHwcv6s0DzVABRgZANnaXZBgB2ZBpZCluaQlmrj3yez6mJwmJdUByZBEyhs5VLQgmkVZAUojDKzqPG6eJkGJWg9ctbZCL3ZALFWxoEZB3QJ2wiPZCfCIfxPWS7ZA57fbKWUi5QbbMfwYOZBHLkaJ"
-            }
-          ]
-        },
-        "sendBody": true,
-        "contentType": "raw",
-        "rawContentType": "application/json",
-        "body": "={{ JSON.stringify($('Merge Client IDs & Prepare Payloads').first().json.ig_story_body) }}",
-        "options": {}
-      },
-      "id": "http-ig-create-story",
-      "name": "Instagram: Create Story Container",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        2220,
-        -320
-      ],
-      "onError": "continueRegularOutput"
-    },
-    {
-      "parameters": {
-        "amount": 10
-      },
-      "id": "wait-story-transcode",
-      "name": "Wait for Story Transcoding",
-      "type": "n8n-nodes-base.wait",
-      "typeVersion": 1.1,
-      "position": [
-        2440,
-        -320
-      ],
-      "webhookId": "story-transcode-wait-id"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "=https://graph.facebook.com/v21.0/{{ $('Merge Client IDs & Prepare Payloads').first().json.instagram_id }}/media_publish",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "Bearer EAGVJejn6LZAgBS4EnS4ZCg5dUtFDzXyPQsRhfuYAYdVnfYrTQANq0bxVFIpOf4KsoZAI952jbsgYXQKflQqjgijeU5nCpEHtA27YWcZB9HLAZCzUm10JhATTNWZCA4TzZA4gx3WcR2necP8dHwcv6s0DzVABRgZANnaXZBgB2ZBpZCluaQlmrj3yez6mJwmJdUByZBEyhs5VLQgmkVZAUojDKzqPG6eJkGJWg9ctbZCL3ZALFWxoEZB3QJ2wiPZCfCIfxPWS7ZA57fbKWUi5QbbMfwYOZBHLkaJ"
-            }
-          ]
-        },
-        "sendBody": true,
-        "contentType": "raw",
-        "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({ creation_id: $('Instagram: Create Story Container').first().json.id }) }}",
-        "options": {}
-      },
-      "id": "http-ig-publish-story",
-      "name": "Instagram: Publish Story Container",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        2660,
-        -320
-      ],
-      "onError": "continueRegularOutput"
     }
   ],
   "connections": {
@@ -1007,7 +901,7 @@
       "main": [
         [
           {
-            "node": "Publish to Instagram Story?",
+            "node": "Publish to Facebook?",
             "type": "main",
             "index": 0
           }
@@ -1077,57 +971,6 @@
         [
           {
             "node": "Update Final Status & URLs",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Publish to Instagram Story?": {
-      "main": [
-        [
-          {
-            "node": "Instagram: Create Story Container",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Publish to Facebook?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Instagram: Create Story Container": {
-      "main": [
-        [
-          {
-            "node": "Wait for Story Transcoding",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Wait for Story Transcoding": {
-      "main": [
-        [
-          {
-            "node": "Instagram: Publish Story Container",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Instagram: Publish Story Container": {
-      "main": [
-        [
-          {
-            "node": "Publish to Facebook?",
             "type": "main",
             "index": 0
           }
