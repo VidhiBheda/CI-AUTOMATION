@@ -855,8 +855,8 @@
       "onError": "continueRegularOutput",
       "credentials": {
         "gmailOAuth2": {
-          "id": "jleaR1iUiH6jJzl6",
-          "name": "Gmail account"
+          "id": "bnLlrZJJuMx82Upm",
+          "name": "Gmail account 2"
         }
       }
     },
@@ -1184,5 +1184,5 @@
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false
   },
-  "versionId": "31ad5e20-6843-43c9-b60e-226d6f93d5a3"
+  "versionId": "f3d9185a-7d58-4dd9-b757-86635ddb0746"
 }
