@@ -513,7 +513,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1776,
+        1900,
         -320
       ],
       "retryOnFail": false,
@@ -657,7 +657,7 @@
     },
     {
       "parameters": {
-        "jsCode": "function extractErrorMsg(errObj) {\n  if (!errObj) return 'Unknown error';\n  if (typeof errObj === 'string') {\n    const jsonMatch = errObj.match(/\\{[\\s\\S]*\\}/);\n    if (jsonMatch) {\n      try {\n        const unescaped = jsonMatch[0].replace(/\\\\\"/g, '\"');\n        const parsed = JSON.parse(unescaped);\n        return extractErrorMsg(parsed);\n      } catch (e) {\n        try {\n          const parsed = JSON.parse(jsonMatch[0]);\n          return extractErrorMsg(parsed);\n        } catch (e2) {}\n      }\n    }\n    return errObj;\n  }\n  if (errObj.error_user_msg) return errObj.error_user_msg;\n  if (errObj.error && errObj.error.error_user_msg) return errObj.error.error_user_msg;\n  if (errObj.error && errObj.error.message) return errObj.error.message;\n  if (errObj.message) return extractErrorMsg(errObj.message);\n  return JSON.stringify(errObj);\n}\n\nconst post = $('Merge Client IDs & Prepare Payloads').first().json;\nconst publishedUrls = [];\nconst errors = [];\n\n// 1. Instagram\nif (post.Instagram === \"Yes\" || post.Instagram === true) {\n  try {\n    let igCreate = null;\n    try {\n      igCreate = $('Instagram: Create Media Container').first();\n    } catch (e) {}\n\n    // Check Container creation FIRST\n    if (igCreate && igCreate.json && igCreate.json.error) {\n      errors.push(\"Instagram container creation error: \" + extractErrorMsg(igCreate.json.error));\n    } else if (!igCreate || !igCreate.json || !igCreate.json.id) {\n      errors.push(\"Instagram container creation failed (no ID returned)\");\n    } else {\n      // Container creation succeeded! Only now check Publish Container\n      let igPub = null;\n      try {\n        igPub = $('Instagram: Publish Container').first();\n      } catch (e) {\n        errors.push(\"Instagram publish error: \" + e.message);\n      }\n\n      if (igPub && igPub.json && igPub.json.error) {\n        let msg = extractErrorMsg(igPub.json.error);\n        if (msg.includes(\"internal server error\") || JSON.stringify(igPub.json.error).includes(\"2207085\")) {\n          msg += \" (Image may be below Instagram's minimum 320x320px resolution)\";\n        }\n        errors.push(\"Instagram publish error: \" + msg);\n      } else if (igPub && igPub.json && igPub.json.id) {\n        let igUrl = \"\";\n        try {\n          const igPerm = $('Instagram: Get Published Permalink').first();\n          if (igPerm && igPerm.json && igPerm.json.permalink) {\n            igUrl = igPerm.json.permalink;\n          } else if (igPerm && igPerm.json && igPerm.json.data && igPerm.json.data[0] && igPerm.json.data[0].permalink) {\n            igUrl = igPerm.json.data[0].permalink;\n          }\n        } catch (e) {}\n\n        if (!igUrl) {\n          igUrl = \"https://www.instagram.com/p/\" + igPub.json.id + \"/\";\n        }\n        publishedUrls.push(igUrl);\n      } else if (igPub) {\n        errors.push(\"Instagram publish failed (no post ID returned)\");\n      }\n    }\n  } catch (e) {\n    errors.push(\"Instagram error: \" + e.message);\n  }\n}\n\n// 2. Facebook\nif (post.Facebook === \"Yes\" || post.Facebook === true) {\n  try {\n    let fbPub = null;\n    try {\n      fbPub = $('Facebook: Publish Photo/Post').first();\n    } catch (e) {\n      errors.push(\"Facebook error: \" + e.message);\n    }\n    let fbUrl = \"\";\n    if (fbPub && fbPub.json) {\n      if (fbPub.json.error) {\n        errors.push(\"Facebook error: \" + extractErrorMsg(fbPub.json.error));\n      } else {\n        const photoId = fbPub.json.id;\n        const postId = fbPub.json.post_id;\n        if (photoId) {\n          fbUrl = \"https://www.facebook.com/photo.php?fbid=\" + photoId;\n        } else if (postId) {\n          const storyId = postId.includes('_') ? postId.split('_')[1] : postId;\n          fbUrl = \"https://www.facebook.com/permalink.php?story_fbid=\" + storyId + \"&id=\" + post.facebook_id;\n        }\n      }\n    }\n\n    if (fbUrl) {\n      publishedUrls.push(fbUrl);\n    } else if (fbPub && (!fbPub.json || !fbPub.json.error)) {\n      errors.push(\"Facebook failed to return post ID\");\n    }\n  } catch (e) {\n    errors.push(\"Facebook error: \" + e.message);\n  }\n}\n\n// 3. LinkedIn\nif (post.LinkedIn === \"Yes\" || post.LinkedIn === true) {\n  try {\n    let liPub = null;\n    try {\n      liPub = $('LinkedIn: Publish Post').first();\n    } catch (e) {\n      errors.push(\"LinkedIn error: \" + e.message);\n    }\n    if (liPub && liPub.json && liPub.json.id) {\n      publishedUrls.push(\"https://www.linkedin.com/feed/update/\" + liPub.json.id);\n    } else if (liPub && liPub.json && (liPub.json.message || liPub.json.error)) {\n      errors.push(\"LinkedIn error: \" + extractErrorMsg(liPub.json.error || liPub.json.message));\n    } else if (liPub) {\n      errors.push(\"LinkedIn failed to return share ID\");\n    }\n  } catch (e) {\n    errors.push(\"LinkedIn error: \" + e.message);\n  }\n}\n\nconst allSuccessful = errors.length === 0;\n\nlet finalPublishedUrl = \"\";\nif (publishedUrls.length === 1) {\n  finalPublishedUrl = '=HYPERLINK(\"' + publishedUrls[0] + '\", \"' + publishedUrls[0] + '\")';\n} else if (publishedUrls.length > 1) {\n  finalPublishedUrl = publishedUrls.join(\"\\n\");\n}\n\nreturn [{\n  json: {\n    \"Post ID\": post[\"Post ID\"],\n    \"Status\": allSuccessful ? \"Posted\" : \"Failed\",\n    \"Published URL\": finalPublishedUrl,\n    \"Error Message\": errors.join(\"; \")\n  }\n}];"
+        "jsCode": "function extractErrorMsg(errObj) {\n  if (!errObj) return 'Unknown error';\n  if (typeof errObj === 'string') {\n    const jsonMatch = errObj.match(/\\{[\\s\\S]*\\}/);\n    if (jsonMatch) {\n      try {\n        const unescaped = jsonMatch[0].replace(/\\\\\"/g, '\"');\n        const parsed = JSON.parse(unescaped);\n        return extractErrorMsg(parsed);\n      } catch (e) {\n        try {\n          const parsed = JSON.parse(jsonMatch[0]);\n          return extractErrorMsg(parsed);\n        } catch (e2) {}\n      }\n    }\n    return errObj;\n  }\n  if (errObj.error_user_msg) return errObj.error_user_msg;\n  if (errObj.error && errObj.error.error_user_msg) return errObj.error.error_user_msg;\n  if (errObj.error && errObj.error.message) return errObj.error.message;\n  if (errObj.message) return extractErrorMsg(errObj.message);\n  return JSON.stringify(errObj);\n}\n\nconst post = $('Merge Client IDs & Prepare Payloads').first().json;\nconst publishedUrls = [];\nconst errors = [];\n\n// 1. Instagram\nif (post.Instagram === \"Yes\" || post.Instagram === true) {\n  try {\n    let igCreate = null;\n    try {\n      igCreate = $('Instagram: Create Media Container').first();\n    } catch (e) {}\n\n    let igStatusNode = null;\n    try {\n      igStatusNode = $('Instagram: Check Container Status').first();\n    } catch (e) {}\n\n    // Check Container creation FIRST\n    if (igCreate && igCreate.json && igCreate.json.error) {\n      errors.push(\"Instagram container creation error: \" + extractErrorMsg(igCreate.json.error));\n    } else if (!igCreate || !igCreate.json || !igCreate.json.id) {\n      errors.push(\"Instagram container creation failed (no ID returned)\");\n    } else if (igStatusNode && igStatusNode.json && igStatusNode.json.status_code === 'ERROR') {\n      let detail = igStatusNode.json.status || \"Media upload failed on Instagram\";\n      errors.push(\"Instagram media error: \" + detail + \" (Aspect ratio must be between 4:5 and 1.91:1, and min 320x320px)\");\n    } else {\n      // Container creation and transcoding succeeded! Check Publish Container\n      let igPub = null;\n      try {\n        igPub = $('Instagram: Publish Container').first();\n      } catch (e) {}\n\n      if (igPub && igPub.json && igPub.json.error) {\n        errors.push(\"Instagram publish error: \" + extractErrorMsg(igPub.json.error));\n      } else if (igPub && igPub.json && igPub.json.id) {\n        let igUrl = \"\";\n        try {\n          const igPerm = $('Instagram: Get Published Permalink').first();\n          if (igPerm && igPerm.json && igPerm.json.permalink) {\n            igUrl = igPerm.json.permalink;\n          } else if (igPerm && igPerm.json && igPerm.json.data && igPerm.json.data[0] && igPerm.json.data[0].permalink) {\n            igUrl = igPerm.json.data[0].permalink;\n          }\n        } catch (e) {}\n\n        if (!igUrl) {\n          igUrl = \"https://www.instagram.com/p/\" + igPub.json.id + \"/\";\n        }\n        publishedUrls.push(igUrl);\n      } else if (igPub) {\n        errors.push(\"Instagram publish failed (no post ID returned)\");\n      } else {\n        errors.push(\"Instagram skipped: Media container was not ready or failed transcoding\");\n      }\n    }\n  } catch (e) {\n    errors.push(\"Instagram error: \" + e.message);\n  }\n}\n\n// 2. Facebook\nif (post.Facebook === \"Yes\" || post.Facebook === true) {\n  try {\n    let fbPub = null;\n    try {\n      fbPub = $('Facebook: Publish Photo/Post').first();\n    } catch (e) {\n      errors.push(\"Facebook error: \" + e.message);\n    }\n    let fbUrl = \"\";\n    if (fbPub && fbPub.json) {\n      if (fbPub.json.error) {\n        errors.push(\"Facebook error: \" + extractErrorMsg(fbPub.json.error));\n      } else {\n        const photoId = fbPub.json.id;\n        const postId = fbPub.json.post_id;\n        if (photoId) {\n          fbUrl = \"https://www.facebook.com/photo.php?fbid=\" + photoId;\n        } else if (postId) {\n          const storyId = postId.includes('_') ? postId.split('_')[1] : postId;\n          fbUrl = \"https://www.facebook.com/permalink.php?story_fbid=\" + storyId + \"&id=\" + post.facebook_id;\n        }\n      }\n    }\n\n    if (fbUrl) {\n      publishedUrls.push(fbUrl);\n    } else if (fbPub && (!fbPub.json || !fbPub.json.error)) {\n      errors.push(\"Facebook failed to return post ID\");\n    }\n  } catch (e) {\n    errors.push(\"Facebook error: \" + e.message);\n  }\n}\n\n// 3. LinkedIn\nif (post.LinkedIn === \"Yes\" || post.LinkedIn === true) {\n  try {\n    let liPub = null;\n    try {\n      liPub = $('LinkedIn: Publish Post').first();\n    } catch (e) {\n      errors.push(\"LinkedIn error: \" + e.message);\n    }\n    if (liPub && liPub.json && liPub.json.id) {\n      publishedUrls.push(\"https://www.linkedin.com/feed/update/\" + liPub.json.id);\n    } else if (liPub && liPub.json && (liPub.json.message || liPub.json.error)) {\n      errors.push(\"LinkedIn error: \" + extractErrorMsg(liPub.json.error || liPub.json.message));\n    } else if (liPub) {\n      errors.push(\"LinkedIn failed to return share ID\");\n    }\n  } catch (e) {\n    errors.push(\"LinkedIn error: \" + e.message);\n  }\n}\n\nconst allSuccessful = errors.length === 0;\n\nlet finalPublishedUrl = \"\";\nif (publishedUrls.length === 1) {\n  finalPublishedUrl = '=HYPERLINK(\"' + publishedUrls[0] + '\", \"' + publishedUrls[0] + '\")';\n} else if (publishedUrls.length > 1) {\n  finalPublishedUrl = publishedUrls.join(\"\\n\");\n}\n\nreturn [{\n  json: {\n    \"Post ID\": post[\"Post ID\"],\n    \"Status\": allSuccessful ? \"Posted\" : \"Failed\",\n    \"Published URL\": finalPublishedUrl,\n    \"Error Message\": errors.join(\"; \")\n  }\n}];"
       },
       "id": "code-consolidate-results",
       "name": "Consolidate Publishing Results",
@@ -747,7 +747,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1984,
+        2100,
         -320
       ],
       "retryOnFail": true,
@@ -766,13 +766,12 @@
           },
           "conditions": [
             {
-              "id": "ig-container-created-check",
-              "leftValue": "={{ Boolean($('Instagram: Create Media Container').first().json.id) }}",
-              "rightValue": true,
+              "id": "ig-container-status-finished",
+              "leftValue": "={{ ($json.status_code || $('Instagram: Check Container Status').first()?.json?.status_code || '').toUpperCase() }}",
+              "rightValue": "FINISHED",
               "operator": {
-                "type": "boolean",
-                "operation": "true",
-                "singleValue": true
+                "type": "string",
+                "operation": "equals"
               }
             }
           ],
@@ -785,7 +784,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1568,
+        1700,
         -320
       ]
     },
@@ -860,6 +859,32 @@
           "name": "Gmail account"
         }
       }
+    },
+    {
+      "parameters": {
+        "url": "=https://graph.facebook.com/v21.0/{{ $('Instagram: Create Media Container').first().json.id }}?fields=status_code,status",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer EAGVJejn6LZAgBS3MGacXHmKD9jmyMrpCOIGXPKE8i0BPKlbRjqMKiAn9Jh5f7n3K1K8IfvfbWFhYPPfuqvbu4D46mAqskIXsEBUU3gmLcTN5dAX7HfWZAoMxZCUmEWIUQU5RZBep2sunPlAmSEJXhIg5Oj6HGKvneVKUS1Mezwx6wTiUADqVrFGueMBwPHQL6DcdsmmLJxiekFY35pZAabSOLrdwnp1QNUqd8tQqnZBeNO59YFaiU2UhXQjJTyg9TZCZBtGwMyNKdRBHQmhR1RofaTQZD"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "http-ig-check-status",
+      "name": "Instagram: Check Container Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1520,
+        -320
+      ],
+      "onError": "continueRegularOutput"
     }
   ],
   "connections": {
@@ -991,7 +1016,7 @@
       "main": [
         [
           {
-            "node": "Did Container Creation Succeed?",
+            "node": "Instagram: Check Container Status",
             "type": "main",
             "index": 0
           }
@@ -1139,6 +1164,17 @@
           }
         ]
       ]
+    },
+    "Instagram: Check Container Status": {
+      "main": [
+        [
+          {
+            "node": "Did Container Creation Succeed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -1148,5 +1184,5 @@
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false
   },
-  "versionId": "00c29dfe-0caf-4dd0-a785-4b2b56d5ab7c"
+  "versionId": "1b949e13-1c6b-4847-b546-4b7e020dfca8"
 }
