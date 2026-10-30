@@ -462,7 +462,7 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer EAGVJejn6LZAgBSw4NTQVZB8cZAYmWmVplV7kSym7gHilmVpUUQK34HxW6umgijRXKlwAPoFHr46U7504FHioY8mDFAjzQaG2MYCb2sIgOxj32sq4Pa7gHCHsPLZC6ZA2qps4g0WSQtSpg8HCqzb7B31TMvMFkqVv1gqA2HKR60z9UPvW2RGYsxIOdGzqs5yLD4w58jxiZAmQ2VsXI2msZBv6tLKViKNoOq2xwUNU0INCRez74r3wuTBEJ4TddgYmxTk3jxzkZBNq7ZA6kVX6kZCT5V2gZDZD"
+              "value": "Bearer EAGVJejn6LZAgBS2ORFom30fvxddvdvBHqZCxJauZBS3HwqSjaMEr1gTDunRbXwRrFc3ngJTgnoaBHZC8sXayNRE6MfiOpSnK0IfsA9KfS6NklWgb8Ajp3V7PKZBHJdfvLic2In7X4OQKMObdGy8YZAupBxlIkIJ0Q4YGmf2vWBQJ7ELkZAVTd0YwkLaSmTcvMMF67ZCpHz71f2wvnTo5PeSj3gJkWjZCEUoQwEq3FrF7FJT1M1f7ToIObuxtmqjLy0fMvzVKxG4pdKCsJZBrMl0rBQ"
             }
           ]
         },
@@ -496,7 +496,7 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer EAGVJejn6LZAgBSw4NTQVZB8cZAYmWmVplV7kSym7gHilmVpUUQK34HxW6umgijRXKlwAPoFHr46U7504FHioY8mDFAjzQaG2MYCb2sIgOxj32sq4Pa7gHCHsPLZC6ZA2qps4g0WSQtSpg8HCqzb7B31TMvMFkqVv1gqA2HKR60z9UPvW2RGYsxIOdGzqs5yLD4w58jxiZAmQ2VsXI2msZBv6tLKViKNoOq2xwUNU0INCRez74r3wuTBEJ4TddgYmxTk3jxzkZBNq7ZA6kVX6kZCT5V2gZDZD"
+              "value": "Bearer EAGVJejn6LZAgBS2ORFom30fvxddvdvBHqZCxJauZBS3HwqSjaMEr1gTDunRbXwRrFc3ngJTgnoaBHZC8sXayNRE6MfiOpSnK0IfsA9KfS6NklWgb8Ajp3V7PKZBHJdfvLic2In7X4OQKMObdGy8YZAupBxlIkIJ0Q4YGmf2vWBQJ7ELkZAVTd0YwkLaSmTcvMMF67ZCpHz71f2wvnTo5PeSj3gJkWjZCEUoQwEq3FrF7FJT1M1f7ToIObuxtmqjLy0fMvzVKxG4pdKCsJZBrMl0rBQ"
             }
           ]
         },
@@ -561,7 +561,7 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer EAGVJejn6LZAgBSwTtUkElHwAtjopaMI5g6FbHfZAhYIC42GAHdvtZBjBL27n94qopzTlUzBk27rGeOBtgyaiB62atKWa4pDKMO1XZBISUFyRPZCls2ysJWFd9Hk80tt5veZCDqknLrvmMQCx3wlal2RoZBTTRsWKXGWYODhZCzy8parq1IVaza0dCUnIUBZCh5ZCTuuQeHSS6eM49WoLfViSku8eoD16zt8ZAgHdp4ZBjJ1Y"
+              "value": "Bearer EAGVJejn6LZAgBS7jDszyDBEdRzUXZAp34M7PZCRbbybyOV4zNFVkoQZCRMy5jHg4QnHLeSkh1BrQ8gzX9NO8bXp1bVOyJUDZCDFZAadAZCPuGgD0TO1SbEE9sF5n8jKB6dJpLTA0k3qao6MPHgJImc6fM2Ye7ty7v2NyH7jyt24tvI96CPe2ZB0oPPCB3VDesNTRUwYXSMdw3zB9S7LJWaWbydzUeqXRDyEbAhos1HScY88ZD"
             }
           ]
         },
@@ -734,7 +734,7 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer EAGVJejn6LZAgBSw4NTQVZB8cZAYmWmVplV7kSym7gHilmVpUUQK34HxW6umgijRXKlwAPoFHr46U7504FHioY8mDFAjzQaG2MYCb2sIgOxj32sq4Pa7gHCHsPLZC6ZA2qps4g0WSQtSpg8HCqzb7B31TMvMFkqVv1gqA2HKR60z9UPvW2RGYsxIOdGzqs5yLD4w58jxiZAmQ2VsXI2msZBv6tLKViKNoOq2xwUNU0INCRez74r3wuTBEJ4TddgYmxTk3jxzkZBNq7ZA6kVX6kZCT5V2gZDZD"
+              "value": "Bearer EAGVJejn6LZAgBS2ORFom30fvxddvdvBHqZCxJauZBS3HwqSjaMEr1gTDunRbXwRrFc3ngJTgnoaBHZC8sXayNRE6MfiOpSnK0IfsA9KfS6NklWgb8Ajp3V7PKZBHJdfvLic2In7X4OQKMObdGy8YZAupBxlIkIJ0Q4YGmf2vWBQJ7ELkZAVTd0YwkLaSmTcvMMF67ZCpHz71f2wvnTo5PeSj3gJkWjZCEUoQwEq3FrF7FJT1M1f7ToIObuxtmqjLy0fMvzVKxG4pdKCsJZBrMl0rBQ"
             }
           ]
         },
@@ -868,7 +868,7 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer EAGVJejn6LZAgBSw4NTQVZB8cZAYmWmVplV7kSym7gHilmVpUUQK34HxW6umgijRXKlwAPoFHr46U7504FHioY8mDFAjzQaG2MYCb2sIgOxj32sq4Pa7gHCHsPLZC6ZA2qps4g0WSQtSpg8HCqzb7B31TMvMFkqVv1gqA2HKR60z9UPvW2RGYsxIOdGzqs5yLD4w58jxiZAmQ2VsXI2msZBv6tLKViKNoOq2xwUNU0INCRez74r3wuTBEJ4TddgYmxTk3jxzkZBNq7ZA6kVX6kZCT5V2gZDZD"
+              "value": "Bearer EAGVJejn6LZAgBS2ORFom30fvxddvdvBHqZCxJauZBS3HwqSjaMEr1gTDunRbXwRrFc3ngJTgnoaBHZC8sXayNRE6MfiOpSnK0IfsA9KfS6NklWgb8Ajp3V7PKZBHJdfvLic2In7X4OQKMObdGy8YZAupBxlIkIJ0Q4YGmf2vWBQJ7ELkZAVTd0YwkLaSmTcvMMF67ZCpHz71f2wvnTo5PeSj3gJkWjZCEUoQwEq3FrF7FJT1M1f7ToIObuxtmqjLy0fMvzVKxG4pdKCsJZBrMl0rBQ"
             }
           ]
         },
@@ -895,7 +895,7 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer EAGVJejn6LZAgBS5uqgenFK8f7RZBQO1Y9lN1MiZCbWZBcTYSKivphlHAxvBoFHEzvkpOZCecklh0jh7T3d3UZCGM5oHpYDpAwO0M5bKLdpFfjjyO931zbFmtZCcCyxXIs0yuWZB4Djp9u29e5JZATRey20zjNUpaKYRXnjgzIZBQBNZAETYUZBFQTn8ZA5tdDvPtjiut1AjhQz6TT1ZAvtKYxf6ZAP02hhSsfjdbbiWGCLZCi4MaF97ZB0JDOSoFwuZBZBt0rcbZC2GvQdJ2jGVfHpk5UzQqhV9ZAHwZDZD"
+              "value": "Bearer EAGVJejn6LZAgBS2ORFom30fvxddvdvBHqZCxJauZBS3HwqSjaMEr1gTDunRbXwRrFc3ngJTgnoaBHZC8sXayNRE6MfiOpSnK0IfsA9KfS6NklWgb8Ajp3V7PKZBHJdfvLic2In7X4OQKMObdGy8YZAupBxlIkIJ0Q4YGmf2vWBQJ7ELkZAVTd0YwkLaSmTcvMMF67ZCpHz71f2wvnTo5PeSj3gJkWjZCEUoQwEq3FrF7FJT1M1f7ToIObuxtmqjLy0fMvzVKxG4pdKCsJZBrMl0rBQ"
             },
             {
               "name": "Content-Type",
@@ -906,7 +906,7 @@
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({\n  messaging_product: 'whatsapp',\n  recipient_type: 'individual',\n  to: $('Get Client Account IDs (Tab B)').first().json['Phone'] || $('Is Status Still Publishing?').first().json['Phone'] || 'YOUR_PHONE_NUMBER',\n  type: 'text',\n  text: {\n    preview_url: true,\n    body: ($json.Status === 'Posted' ? '🎉 *Post Published Successfully!*' : '⚠️ *Post Publishing Issue!*') + '\\n\\n' +\n      '📌 *Content:* ' + ($('Is Status Still Publishing?').first().json['Content Name'] || 'Social Media Post') + '\\n' +\n      '👤 *Client:* ' + ($('Is Status Still Publishing?').first().json['Client Name'] || 'N/A') + '\\n\\n' +\n      '🔗 *Live Published Links:*\\n' + ($json['Published URL'] || 'None')\n  }\n}) }}",
+        "body": "={{ JSON.stringify({\n  messaging_product: 'whatsapp',\n  recipient_type: 'individual',\n  to: $('Get Client Account IDs (Tab B)').first().json['Phone'] || $('Is Status Still Publishing?').first().json['Phone'] || 'YOUR_PHONE_NUMBER',\n  type: 'text',\n  text: {\n    preview_url: true,\n    body: ($('Consolidate Publishing Results').first().json.Status === 'Posted' ? '🎉 *Post Published Successfully!*' : '⚠️ *Post Publishing Issue!*') + '\\n\\n' +\n      '📌 *Content:* ' + ($('Is Status Still Publishing?').first().json['Content Name'] || 'Social Media Post') + '\\n' +\n      '👤 *Client:* ' + ($('Is Status Still Publishing?').first().json['Client Name'] || 'N/A') + '\\n\\n' +\n      '🔗 *Live Published Links:*\\n' + ($('Consolidate Publishing Results').first().json['Published URL'] || 'None')\n  }\n}) }}",
         "options": {
           "timeout": 30000
         }
