@@ -885,6 +885,41 @@
         -320
       ],
       "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v21.0/1447960638397391/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer EAGVJejn6LZAgBS5uqgenFK8f7RZBQO1Y9lN1MiZCbWZBcTYSKivphlHAxvBoFHEzvkpOZCecklh0jh7T3d3UZCGM5oHpYDpAwO0M5bKLdpFfjjyO931zbFmtZCcCyxXIs0yuWZB4Djp9u29e5JZATRey20zjNUpaKYRXnjgzIZBQBNZAETYUZBFQTn8ZA5tdDvPtjiut1AjhQz6TT1ZAvtKYxf6ZAP02hhSsfjdbbiWGCLZCi4MaF97ZB0JDOSoFwuZBZBt0rcbZC2GvQdJ2jGVfHpk5UzQqhV9ZAHwZDZD"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({\n  messaging_product: 'whatsapp',\n  recipient_type: 'individual',\n  to: $('Get Client Account IDs (Tab B)').first().json['Phone'] || $('Is Status Still Publishing?').first().json['Phone'] || 'YOUR_PHONE_NUMBER',\n  type: 'text',\n  text: {\n    preview_url: true,\n    body: ($json.Status === 'Posted' ? '🎉 *Post Published Successfully!*' : '⚠️ *Post Publishing Issue!*') + '\\n\\n' +\n      '📌 *Content:* ' + ($('Is Status Still Publishing?').first().json['Content Name'] || 'Social Media Post') + '\\n' +\n      '👤 *Client:* ' + ($('Is Status Still Publishing?').first().json['Client Name'] || 'N/A') + '\\n\\n' +\n      '🔗 *Live Published Links:*\\n' + ($json['Published URL'] || 'None')\n  }\n}) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "http-whatsapp-notification",
+      "name": "WhatsApp: Send Publishing Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2380,
+        -80
+      ],
+      "onError": "continueRegularOutput"
     }
   ],
   "connections": {
@@ -1175,6 +1210,17 @@
           }
         ]
       ]
+    },
+    "Gmail: Send Publishing Notification": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp: Send Publishing Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -1184,5 +1230,5 @@
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false
   },
-  "versionId": "6cb40161-1c81-46fc-ab37-daaaa844016b"
+  "versionId": "b3da67e9-3293-4b96-82bd-030743b9b414"
 }
