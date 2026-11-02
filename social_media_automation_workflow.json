@@ -657,14 +657,14 @@
     },
     {
       "parameters": {
-        "jsCode": "function extractErrorMsg(errObj) {\n  if (!errObj) return 'Unknown error';\n  if (typeof errObj === 'string') {\n    const jsonMatch = errObj.match(/\\{[\\s\\S]*\\}/);\n    if (jsonMatch) {\n      try {\n        const unescaped = jsonMatch[0].replace(/\\\\\"/g, '\"');\n        const parsed = JSON.parse(unescaped);\n        return extractErrorMsg(parsed);\n      } catch (e) {\n        try {\n          const parsed = JSON.parse(jsonMatch[0]);\n          return extractErrorMsg(parsed);\n        } catch (e2) {}\n      }\n    }\n    return errObj;\n  }\n  if (errObj.error_user_msg) return errObj.error_user_msg;\n  if (errObj.error && errObj.error.error_user_msg) return errObj.error.error_user_msg;\n  if (errObj.error && errObj.error.message) return errObj.error.message;\n  if (errObj.message) return extractErrorMsg(errObj.message);\n  return JSON.stringify(errObj);\n}\n\nconst post = $('Merge Client IDs & Prepare Payloads').first().json;\nconst publishedUrls = [];\nconst errors = [];\nlet igUrl = \"\";\nlet fbUrl = \"\";\nlet liUrl = \"\";\n\n// 1. Instagram\nif (post.Instagram === \"Yes\" || post.Instagram === true) {\n  try {\n    let igCreate = null;\n    try {\n      igCreate = $('Instagram: Create Media Container').first();\n    } catch (e) {}\n\n    let igStatusNode = null;\n    try {\n      igStatusNode = $('Instagram: Check Container Status').first();\n    } catch (e) {}\n\n    let igPub = null;\n    try {\n      igPub = $('Instagram: Publish Container').first();\n    } catch (e) {}\n\n    // Check if permalink was retrieved (either direct or fallback query)\n    try {\n      const igPerm = $('Instagram: Get Published Permalink').first();\n      if (igPerm && igPerm.json) {\n        if (igPerm.json.permalink) {\n          igUrl = igPerm.json.permalink;\n        } else if (igPerm.json.data && igPerm.json.data[0] && igPerm.json.data[0].permalink) {\n          igUrl = igPerm.json.data[0].permalink;\n        }\n      }\n    } catch (e) {}\n\n    if (igUrl) {\n      publishedUrls.push(igUrl);\n    } else if (igCreate && igCreate.json && igCreate.json.error) {\n      errors.push(\"Instagram container creation error: \" + extractErrorMsg(igCreate.json.error));\n    } else if (!igCreate || !igCreate.json || !igCreate.json.id) {\n      errors.push(\"Instagram container creation failed (no ID returned)\");\n    } else if (igStatusNode && igStatusNode.json && igStatusNode.json.status_code === 'ERROR') {\n      let detail = igStatusNode.json.status || \"Media upload failed on Instagram\";\n      errors.push(\"Instagram media error: \" + detail + \" (Aspect ratio must be between 4:5 and 1.91:1, and min 320x320px)\");\n    } else if (igPub && igPub.json && igPub.json.error) {\n      errors.push(\"Instagram publish error: \" + extractErrorMsg(igPub.json.error));\n    } else if (igPub && igPub.json && igPub.json.id) {\n      igUrl = \"https://www.instagram.com/p/\" + igPub.json.id + \"/\";\n      publishedUrls.push(igUrl);\n    } else {\n      errors.push(\"Instagram publish failed (no post ID or permalink returned)\");\n    }\n  } catch (e) {\n    errors.push(\"Instagram error: \" + e.message);\n  }\n}\n\n// 2. Facebook\nif (post.Facebook === \"Yes\" || post.Facebook === true) {\n  try {\n    let fbPub = null;\n    try {\n      fbPub = $('Facebook: Publish Photo/Post').first();\n    } catch (e) {\n      errors.push(\"Facebook error: \" + e.message);\n    }\n    if (fbPub && fbPub.json) {\n      if (fbPub.json.error) {\n        errors.push(\"Facebook error: \" + extractErrorMsg(fbPub.json.error));\n      } else {\n        const photoId = fbPub.json.id;\n        const postId = fbPub.json.post_id;\n        if (photoId) {\n          fbUrl = \"https://www.facebook.com/photo.php?fbid=\" + photoId;\n        } else if (postId) {\n          const storyId = postId.includes('_') ? postId.split('_')[1] : postId;\n          fbUrl = \"https://www.facebook.com/permalink.php?story_fbid=\" + storyId + \"&id=\" + post.facebook_id;\n        }\n      }\n    }\n\n    if (fbUrl) {\n      publishedUrls.push(fbUrl);\n    } else if (fbPub && (!fbPub.json || !fbPub.json.error)) {\n      errors.push(\"Facebook failed to return post ID\");\n    }\n  } catch (e) {\n    errors.push(\"Facebook error: \" + e.message);\n  }\n}\n\n// 3. LinkedIn\nif (post.LinkedIn === \"Yes\" || post.LinkedIn === true) {\n  try {\n    let liPub = null;\n    try {\n      liPub = $('LinkedIn: Publish Post').first();\n    } catch (e) {\n      errors.push(\"LinkedIn error: \" + e.message);\n    }\n    if (liPub && liPub.json && liPub.json.id) {\n      liUrl = \"https://www.linkedin.com/feed/update/\" + liPub.json.id;\n      publishedUrls.push(liUrl);\n    } else if (liPub && liPub.json && (liPub.json.message || liPub.json.error)) {\n      errors.push(\"LinkedIn error: \" + extractErrorMsg(liPub.json.error || liPub.json.message));\n    } else if (liPub) {\n      errors.push(\"LinkedIn failed to return share ID\");\n    }\n  } catch (e) {\n    errors.push(\"LinkedIn error: \" + e.message);\n  }\n}\n\nconst allSuccessful = errors.length === 0;\n\nlet finalPublishedUrl = \"\";\nif (publishedUrls.length === 1) {\n  finalPublishedUrl = '=HYPERLINK(\"' + publishedUrls[0] + '\", \"' + publishedUrls[0] + '\")';\n} else if (publishedUrls.length > 1) {\n  finalPublishedUrl = publishedUrls.join(\"\\n\");\n}\n\nreturn [{\n  json: {\n    \"Post ID\": post[\"Post ID\"],\n    \"Status\": allSuccessful ? \"Posted\" : \"Failed\",\n    \"Published URL\": finalPublishedUrl,\n    \"Error Message\": errors.join(\"; \"),\n    \"instagram_url\": igUrl || \"None\",\n    \"facebook_url\": fbUrl || \"None\",\n    \"linkedin_url\": liUrl || \"None\"\n  }\n}];"
+        "jsCode": "function extractErrorMsg(errObj) {\n  if (!errObj) return 'Unknown error';\n  if (typeof errObj === 'string') {\n    const jsonMatch = errObj.match(/\\{[\\s\\S]*\\}/);\n    if (jsonMatch) {\n      try {\n        const unescaped = jsonMatch[0].replace(/\\\\\"/g, '\"');\n        const parsed = JSON.parse(unescaped);\n        return extractErrorMsg(parsed);\n      } catch (e) {\n        try {\n          const parsed = JSON.parse(jsonMatch[0]);\n          return extractErrorMsg(parsed);\n        } catch (e2) {}\n      }\n    }\n    return errObj;\n  }\n  if (errObj.error_user_msg) return errObj.error_user_msg;\n  if (errObj.error && errObj.error.error_user_msg) return errObj.error.error_user_msg;\n  if (errObj.error && errObj.error.message) return errObj.error.message;\n  if (errObj.message) return extractErrorMsg(errObj.message);\n  return JSON.stringify(errObj);\n}\n\nconst post = $('Merge Client IDs & Prepare Payloads').first().json;\nconst publishedUrls = [];\nconst errors = [];\nlet igUrl = \"\";\nlet fbUrl = \"\";\nlet liUrl = \"\";\nlet twitterUrl = \"\";\n\n// 1. Instagram\nif (post.Instagram === \"Yes\" || post.Instagram === true) {\n  try {\n    let igCreate = null;\n    try {\n      igCreate = $('Instagram: Create Media Container').first();\n    } catch (e) {}\n\n    let igStatusNode = null;\n    try {\n      igStatusNode = $('Instagram: Check Container Status').first();\n    } catch (e) {}\n\n    let igPub = null;\n    try {\n      igPub = $('Instagram: Publish Container').first();\n    } catch (e) {}\n\n    try {\n      const igPerm = $('Instagram: Get Published Permalink').first();\n      if (igPerm && igPerm.json) {\n        if (igPerm.json.permalink) {\n          igUrl = igPerm.json.permalink;\n        } else if (igPerm.json.data && igPerm.json.data[0] && igPerm.json.data[0].permalink) {\n          igUrl = igPerm.json.data[0].permalink;\n        }\n      }\n    } catch (e) {}\n\n    if (igUrl) {\n      publishedUrls.push(igUrl);\n    } else if (igCreate && igCreate.json && igCreate.json.error) {\n      errors.push(\"Instagram container creation error: \" + extractErrorMsg(igCreate.json.error));\n    } else if (!igCreate || !igCreate.json || !igCreate.json.id) {\n      errors.push(\"Instagram container creation failed (no ID returned)\");\n    } else if (igStatusNode && igStatusNode.json && igStatusNode.json.status_code === 'ERROR') {\n      let detail = igStatusNode.json.status || \"Media upload failed on Instagram\";\n      errors.push(\"Instagram media error: \" + detail + \" (Aspect ratio must be between 4:5 and 1.91:1, and min 320x320px)\");\n    } else if (igPub && igPub.json && igPub.json.error) {\n      errors.push(\"Instagram publish error: \" + extractErrorMsg(igPub.json.error));\n    } else if (igPub && igPub.json && igPub.json.id) {\n      igUrl = \"https://www.instagram.com/p/\" + igPub.json.id + \"/\";\n      publishedUrls.push(igUrl);\n    } else {\n      errors.push(\"Instagram publish failed (no post ID or permalink returned)\");\n    }\n  } catch (e) {\n    errors.push(\"Instagram error: \" + e.message);\n  }\n}\n\n// 2. Facebook\nif (post.Facebook === \"Yes\" || post.Facebook === true) {\n  try {\n    let fbPub = null;\n    try {\n      fbPub = $('Facebook: Publish Photo/Post').first();\n    } catch (e) {\n      errors.push(\"Facebook error: \" + e.message);\n    }\n    if (fbPub && fbPub.json) {\n      if (fbPub.json.error) {\n        errors.push(\"Facebook error: \" + extractErrorMsg(fbPub.json.error));\n      } else {\n        const photoId = fbPub.json.id;\n        const postId = fbPub.json.post_id;\n        if (photoId) {\n          fbUrl = \"https://www.facebook.com/photo.php?fbid=\" + photoId;\n        } else if (postId) {\n          const storyId = postId.includes('_') ? postId.split('_')[1] : postId;\n          fbUrl = \"https://www.facebook.com/permalink.php?story_fbid=\" + storyId + \"&id=\" + post.facebook_id;\n        }\n      }\n    }\n\n    if (fbUrl) {\n      publishedUrls.push(fbUrl);\n    } else if (fbPub && (!fbPub.json || !fbPub.json.error)) {\n      errors.push(\"Facebook failed to return post ID\");\n    }\n  } catch (e) {\n    errors.push(\"Facebook error: \" + e.message);\n  }\n}\n\n// 3. LinkedIn\nif (post.LinkedIn === \"Yes\" || post.LinkedIn === true) {\n  try {\n    let liPub = null;\n    try {\n      liPub = $('LinkedIn: Publish Post').first();\n    } catch (e) {\n      errors.push(\"LinkedIn error: \" + e.message);\n    }\n    if (liPub && liPub.json && liPub.json.id) {\n      liUrl = \"https://www.linkedin.com/feed/update/\" + liPub.json.id;\n      publishedUrls.push(liUrl);\n    } else if (liPub && liPub.json && (liPub.json.message || liPub.json.error)) {\n      errors.push(\"LinkedIn error: \" + extractErrorMsg(liPub.json.error || liPub.json.message));\n    } else if (liPub) {\n      errors.push(\"LinkedIn failed to return share ID\");\n    }\n  } catch (e) {\n    errors.push(\"LinkedIn error: \" + e.message);\n  }\n}\n\n// 4. X (Twitter)\nconst allowTwitter = post.Twitter === \"Yes\" || post.Twitter === true || post.X === \"Yes\" || post.X === true;\nif (allowTwitter) {\n  try {\n    let twPub = null;\n    try {\n      twPub = $('X (Twitter): Publish Tweet').first();\n    } catch (e) {\n      errors.push(\"X (Twitter) error: \" + e.message);\n    }\n    if (twPub && twPub.json) {\n      if (twPub.json.error) {\n        errors.push(\"X (Twitter) error: \" + extractErrorMsg(twPub.json.error));\n      } else {\n        const tweetId = twPub.json.id || twPub.json.data?.id;\n        if (tweetId) {\n          twitterUrl = \"https://x.com/i/status/\" + tweetId;\n          publishedUrls.push(twitterUrl);\n        } else if (twPub.json.message) {\n          errors.push(\"X (Twitter) error: \" + extractErrorMsg(twPub.json.message));\n        }\n      }\n    }\n    if (!twitterUrl && (!twPub || !twPub.json || !twPub.json.error)) {\n      errors.push(\"X (Twitter) failed to return Tweet ID\");\n    }\n  } catch (e) {\n    errors.push(\"X (Twitter) error: \" + e.message);\n  }\n}\n\nconst allSuccessful = errors.length === 0;\n\nlet finalPublishedUrl = \"\";\nif (publishedUrls.length === 1) {\n  finalPublishedUrl = '=HYPERLINK(\"' + publishedUrls[0] + '\", \"' + publishedUrls[0] + '\")';\n} else if (publishedUrls.length > 1) {\n  finalPublishedUrl = publishedUrls.join(\"\\n\");\n}\n\nreturn [{\n  json: {\n    \"Post ID\": post[\"Post ID\"],\n    \"Status\": allSuccessful ? \"Posted\" : \"Failed\",\n    \"Published URL\": finalPublishedUrl,\n    \"Error Message\": errors.join(\"; \"),\n    \"instagram_url\": igUrl || \"None\",\n    \"facebook_url\": fbUrl || \"None\",\n    \"linkedin_url\": liUrl || \"None\",\n    \"twitter_url\": twitterUrl || \"None\"\n  }\n}];"
       },
       "id": "code-consolidate-results",
       "name": "Consolidate Publishing Results",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1776,
+        1940,
         -80
       ]
     },
@@ -702,7 +702,7 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
       "position": [
-        1920,
+        2180,
         -80
       ],
       "credentials": {
@@ -841,7 +841,7 @@
         "sendTo": "whosvee13@gmail.com",
         "subject": "={{ ($json.Status === 'Posted' ? '🎉 Post Published: ' : '⚠️ Post Publishing Issue: ') + ($('Is Status Still Publishing?').first().json['Content Name'] || 'Social Media Post') }}",
         "emailType": "html",
-        "message": "={{ (() => {\n  const post = $('Is Status Still Publishing?').first().json;\n  const urls = ($json[\"Published URL\"] || \"\").split(\"\\n\").filter(Boolean);\n  \n  let linkButtons = \"\";\n  if (urls.length === 0) {\n    linkButtons = \"<p style='color: #888; font-style: italic;'>No published URLs available.</p>\";\n  } else {\n    linkButtons = urls.map(u => {\n      let label = \"View Post\";\n      let btnColor = \"#1877f2\";\n      if (u.includes(\"instagram.com\")) {\n        label = u.includes(\"/reel/\") ? \"📸 View on Instagram Reel\" : \"📸 View on Instagram Post\";\n        btnColor = \"#E1306C\";\n      } else if (u.includes(\"facebook.com\")) {\n        label = \"📘 View on Facebook\";\n        btnColor = \"#1877f2\";\n      } else if (u.includes(\"linkedin.com\")) {\n        label = \"💼 View on LinkedIn\";\n        btnColor = \"#0A66C2\";\n      }\n      return '<div style=\"margin: 10px 0;\">' +\n        '<a href=\"' + u + '\" target=\"_blank\" style=\"display: inline-block; padding: 10px 20px; background-color: ' + btnColor + '; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px;\">' + label + '</a><br>' +\n        '<span style=\"font-size: 12px; color: #555; word-break: break-all;\">' + u + '</span>' +\n      '</div>';\n    }).join(\"\");\n  }\n\n  const errorBlock = $json[\"Error Message\"] ? '<div style=\"background-color: #ffebee; border-left: 4px solid #f44336; padding: 12px; margin: 15px 0; border-radius: 4px; color: #c62828;\"><strong>Error Details:</strong><br>' + $json[\"Error Message\"] + '</div>' : '';\n\n  return '<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 25px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #ffffff;\">' +\n    '<h2 style=\"color: ' + ($json.Status === 'Posted' ? '#2e7d32' : '#d32f2f') + '; margin-top: 0;\">' + ($json.Status === 'Posted' ? '🎉 Post Published Successfully!' : '⚠️ Post Publishing Alert') + '</h2>' +\n    '<p style=\"color: #555; font-size: 14px; margin-bottom: 20px;\">Here is the summary of your scheduled post from your Content Calendar:</p>' +\n    '<table style=\"width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;\">' +\n      '<tr style=\"border-bottom: 1px solid #eee;\"><td style=\"padding: 8px 0; font-weight: bold; color: #333; width: 140px;\">Content Name:</td><td style=\"padding: 8px 0; color: #555;\">' + (post[\"Content Name\"] || \"N/A\") + '</td></tr>' +\n      '<tr style=\"border-bottom: 1px solid #eee;\"><td style=\"padding: 8px 0; font-weight: bold; color: #333;\">Client:</td><td style=\"padding: 8px 0; color: #555;\">' + (post[\"Client Name\"] || \"N/A\") + '</td></tr>' +\n      '<tr style=\"border-bottom: 1px solid #eee;\"><td style=\"padding: 8px 0; font-weight: bold; color: #333;\">Status:</td><td style=\"padding: 8px 0; font-weight: bold; color: ' + ($json.Status === 'Posted' ? '#2e7d32' : '#d32f2f') + ';\">' + $json.Status + '</td></tr>' +\n    '</table>' +\n    '<h3 style=\"color: #333; margin-bottom: 12px;\">Live Published Links:</h3>' +\n    '<div style=\"background-color: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px solid #e9ecef;\">' + linkButtons + '</div>' +\n    errorBlock +\n    '<p style=\"font-size: 11px; color: #888; margin-top: 25px; border-top: 1px solid #eee; padding-top: 10px; text-align: center;\">Automated notification sent from n8n Social Media Automation</p>' +\n  '</div>';\n})() }}",
+        "message": "={{ (() => {\n  const post = $('Is Status Still Publishing?').first().json;\n  const urls = ($json[\"Published URL\"] || \"\").split(\"\\n\").filter(Boolean);\n  \n  let linkButtons = \"\";\n  if (urls.length === 0) {\n    linkButtons = \"<p style='color: #888; font-style: italic;'>No published URLs available.</p>\";\n  } else {\n    linkButtons = urls.map(u => {\n      let label = \"View Post\";\n      let btnColor = \"#1877f2\";\n      if (u.includes(\"instagram.com\")) {\n        label = u.includes(\"/reel/\") ? \"📸 View on Instagram Reel\" : \"📸 View on Instagram Post\";\n        btnColor = \"#E1306C\";\n      } else if (u.includes(\"facebook.com\")) {\n        label = \"📘 View on Facebook\";\n        btnColor = \"#1877f2\";\n      } else if (u.includes(\"x.com\") || u.includes(\"twitter.com\")) {\n        label = \"𝕏 View on X (Twitter)\";\n        btnColor = \"#000000\";\n      } else if (u.includes(\"linkedin.com\")) {\n        label = \"💼 View on LinkedIn\";\n        btnColor = \"#0A66C2\";\n      }\n      return '<div style=\"margin: 10px 0;\">' +\n        '<a href=\"' + u + '\" target=\"_blank\" style=\"display: inline-block; padding: 10px 20px; background-color: ' + btnColor + '; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px;\">' + label + '</a><br>' +\n        '<span style=\"font-size: 12px; color: #555; word-break: break-all;\">' + u + '</span>' +\n      '</div>';\n    }).join(\"\");\n  }\n\n  const errorBlock = $json[\"Error Message\"] ? '<div style=\"background-color: #ffebee; border-left: 4px solid #f44336; padding: 12px; margin: 15px 0; border-radius: 4px; color: #c62828;\"><strong>Error Details:</strong><br>' + $json[\"Error Message\"] + '</div>' : '';\n\n  return '<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 25px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #ffffff;\">' +\n    '<h2 style=\"color: ' + ($json.Status === 'Posted' ? '#2e7d32' : '#d32f2f') + '; margin-top: 0;\">' + ($json.Status === 'Posted' ? '🎉 Post Published Successfully!' : '⚠️ Post Publishing Alert') + '</h2>' +\n    '<p style=\"color: #555; font-size: 14px; margin-bottom: 20px;\">Here is the summary of your scheduled post from your Content Calendar:</p>' +\n    '<table style=\"width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;\">' +\n      '<tr style=\"border-bottom: 1px solid #eee;\"><td style=\"padding: 8px 0; font-weight: bold; color: #333; width: 140px;\">Content Name:</td><td style=\"padding: 8px 0; color: #555;\">' + (post[\"Content Name\"] || \"N/A\") + '</td></tr>' +\n      '<tr style=\"border-bottom: 1px solid #eee;\"><td style=\"padding: 8px 0; font-weight: bold; color: #333;\">Client:</td><td style=\"padding: 8px 0; color: #555;\">' + (post[\"Client Name\"] || \"N/A\") + '</td></tr>' +\n      '<tr style=\"border-bottom: 1px solid #eee;\"><td style=\"padding: 8px 0; font-weight: bold; color: #333;\">Status:</td><td style=\"padding: 8px 0; font-weight: bold; color: ' + ($json.Status === 'Posted' ? '#2e7d32' : '#d32f2f') + ';\">' + $json.Status + '</td></tr>' +\n    '</table>' +\n    '<h3 style=\"color: #333; margin-bottom: 12px;\">Live Published Links:</h3>' +\n    '<div style=\"background-color: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px solid #e9ecef;\">' + linkButtons + '</div>' +\n    errorBlock +\n    '<p style=\"font-size: 11px; color: #888; margin-top: 25px; border-top: 1px solid #eee; padding-top: 10px; text-align: center;\">Automated notification sent from n8n Social Media Automation</p>' +\n  '</div>';\n})() }}",
         "options": {}
       },
       "id": "gmail-notify-published",
@@ -849,7 +849,7 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        2140,
+        2420,
         -80
       ],
       "onError": "continueRegularOutput",
@@ -906,7 +906,7 @@
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({\n  messaging_product: 'whatsapp',\n  recipient_type: 'individual',\n  to: (String($('Get Client Account IDs (Tab B)').first()?.json?.['Phone'] || $('Get Client Account IDs (Tab B)').first()?.json?.['WhatsApp'] || $('Is Status Still Publishing?').first()?.json?.['Phone'] || '918734037481')).replace(/[^0-9]/g, ''),\n  type: 'text',\n  text: {\n    preview_url: false,\n    body: (() => {\n      const post = $('Is Status Still Publishing?').first().json;\n      const clientName = post['Client Name'] || 'client';\n      const tz = post['Time Zone'] || 'Asia/Kolkata';\n      let timeStr = '';\n      try {\n        timeStr = new Date().toLocaleTimeString('en-US', { timeZone: tz, hour: 'numeric', minute: '2-digit', hour12: true });\n      } catch (e) {\n        timeStr = new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Kolkata', hour: 'numeric', minute: '2-digit', hour12: true });\n      }\n      const isPosted = $('Consolidate Publishing Results').first().json.Status === 'Posted';\n      const header = isPosted ? ('*Successfully posted for ' + clientName + ' at ' + timeStr + '*') : ('*Publishing failed for ' + clientName + ' at ' + timeStr + '*');\n      const igLink = $('Consolidate Publishing Results').first().json.instagram_url || 'None';\n      const fbLink = $('Consolidate Publishing Results').first().json.facebook_url || 'None';\n      return header + '\\n\\n' +\n        'Instagram:- ' + igLink + '\\n' +\n        'Facebook:- ' + fbLink;\n    })()\n  }\n}) }}",
+        "body": "={{ JSON.stringify({\n  messaging_product: 'whatsapp',\n  recipient_type: 'individual',\n  to: (String($('Get Client Account IDs (Tab B)').first()?.json?.['Phone'] || $('Get Client Account IDs (Tab B)').first()?.json?.['WhatsApp'] || $('Is Status Still Publishing?').first()?.json?.['Phone'] || '918734037481')).replace(/[^0-9]/g, ''),\n  type: 'text',\n  text: {\n    preview_url: false,\n    body: (() => {\n      const post = $('Is Status Still Publishing?').first().json;\n      const clientName = post['Client Name'] || 'client';\n      const tz = post['Time Zone'] || 'Asia/Kolkata';\n      let timeStr = '';\n      try {\n        timeStr = new Date().toLocaleTimeString('en-US', { timeZone: tz, hour: 'numeric', minute: '2-digit', hour12: true });\n      } catch (e) {\n        timeStr = new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Kolkata', hour: 'numeric', minute: '2-digit', hour12: true });\n      }\n      const isPosted = $('Consolidate Publishing Results').first().json.Status === 'Posted';\n      const header = isPosted ? ('*Successfully posted for ' + clientName + ' at ' + timeStr + '*') : ('*Publishing failed for ' + clientName + ' at ' + timeStr + '*');\n      \n      const igLink = $('Consolidate Publishing Results').first().json.instagram_url || 'None';\n      const fbLink = $('Consolidate Publishing Results').first().json.facebook_url || 'None';\n      const twLink = $('Consolidate Publishing Results').first().json.twitter_url || 'None';\n      \n      let links = 'Instagram:- ' + igLink + '\\n' + 'Facebook:- ' + fbLink;\n      if (twLink && twLink !== 'None') {\n        links += '\\nX (Twitter):- ' + twLink;\n      }\n      \n      return header + '\\n\\n' + links;\n    })()\n  }\n}) }}",
         "options": {
           "timeout": 30000
         }
@@ -916,9 +916,65 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2380,
+        2660,
         -80
       ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "cond-tw-yes",
+              "leftValue": "={{ $('Is Status Still Publishing?').first().json.Twitter || $('Is Status Still Publishing?').first().json.X }}",
+              "rightValue": "Yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "if-twitter-enabled",
+      "name": "Publish to X (Twitter)?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1480,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "tweet",
+        "operation": "create",
+        "text": "={{ $('Is Status Still Publishing?').first().json['Twitter Caption'] || $('Is Status Still Publishing?').first().json['X Caption'] || $('Is Status Still Publishing?').first().json['Facebook Caption'] || $('Is Status Still Publishing?').first().json['Instagram Caption'] || '' }}",
+        "additionalFields": {}
+      },
+      "id": "twitter-publish-tweet",
+      "name": "X (Twitter): Publish Tweet",
+      "type": "n8n-nodes-base.twitter",
+      "typeVersion": 2,
+      "position": [
+        1700,
+        176
+      ],
+      "credentials": {
+        "twitterOAuth2Api": {
+          "id": "xZK2jMfqLAoKGw3E",
+          "name": "X (Twitter) account"
+        }
+      },
       "onError": "continueRegularOutput"
     }
   ],
@@ -1120,7 +1176,7 @@
         ],
         [
           {
-            "node": "Consolidate Publishing Results",
+            "node": "Publish to X (Twitter)?",
             "type": "main",
             "index": 0
           }
@@ -1131,7 +1187,7 @@
       "main": [
         [
           {
-            "node": "Consolidate Publishing Results",
+            "node": "Publish to X (Twitter)?",
             "type": "main",
             "index": 0
           }
@@ -1216,6 +1272,35 @@
         [
           {
             "node": "WhatsApp: Send Publishing Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish to X (Twitter)?": {
+      "main": [
+        [
+          {
+            "node": "X (Twitter): Publish Tweet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Consolidate Publishing Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "X (Twitter): Publish Tweet": {
+      "main": [
+        [
+          {
+            "node": "Consolidate Publishing Results",
             "type": "main",
             "index": 0
           }
